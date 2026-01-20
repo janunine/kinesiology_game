@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Muscle Memory Match - School of Kinesiology</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            overflow: hidden;
+            background: #000428;
+        }
+
+        #background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            background: radial-gradient(circle, rgba(255,203,5,0.8), rgba(0,39,76,0.4));
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); }
+            50% { transform: translateY(-20px) translateX(10px); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            background: linear-gradient(135deg, #FFCB05, #00274C);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(255,203,5,0.3);
+        }
+
+        .score {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            border-radius: 50px;
+            color: #FFCB05;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: 2px solid rgba(255,203,5,0.3);
+            margin-bottom: 20px;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(4, 120px);
+            gap: 15px;
+            padding: 30px;
+            background: rgba(0,39,76,0.3);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 2px solid rgba(255,203,5,0.2);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .card {
+            width: 120px;
+            height: 120px;
+            position: relative;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card.matched {
+            animation: match 0.6s ease;
+        }
+
+        @keyframes match {
+            0%, 100% { transform: scale(1) rotateY(180deg); }
+            50% { transform: scale(1.2) rotateY(180deg); }
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #00274C, #004a99);
+            border: 3px solid #FFCB05;
+            color: #FFCB05;
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, #FFCB05, #ffd633);
+            transform: rotateY(180deg);
+            font-size: 1.5rem;
+            color: #00274C;
+            padding: 10px;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .reset-btn {
+            margin-top: 30px;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #FFCB05, #ffd633);
+            color: #00274C;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(255,203,5,0.4);
+            transition: all 0.3s;
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(255,203,5,0.6);
+        }
+
+        .victory {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,39,76,0.95);
+            backdrop-filter: blur(20px);
+            padding: 50px;
+            border-radius: 30px;
+            border: 3px solid #FFCB05;
+            text-align: center;
+            z-index: 100;
+            animation: victoryPop 0.6s ease;
+        }
+
+        @keyframes victoryPop {
+            0% { transform: translate(-50%, -50%) scale(0); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .victory h2 {
+            color: #FFCB05;
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .victory p {
+            color: white;
+            font-size: 1.3rem;
+        }
+
+        @media (max-width: 768px) {
+            .game-board {
+                grid-template-columns: repeat(4, 80px);
+                gap: 10px;
+                padding: 20px;
+            }
+            .card {
+                width: 80px;
+                height: 80px;
+            }
+            .card-back {
+                font-size: 1rem;
+            }
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="background"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>💪 Muscle Memory Match</h1>
+            <p style="color: rgba(255,203,5,0.8); font-size: 1.1rem;">Test your kinesiology knowledge!</p>
+        </div>
+
+        <div class="score">
+            Moves: <span id="moves">0</span> | Time: <span id="time">0</span>s
+        </div>
+
+        <div class="game-board" id="gameBoard"></div>
+
+        <button class="reset-btn" onclick="resetGame()">New Game</button>
+    </div>
+
+    <div class="victory" id="victory">
+        <h2>🏆 Victory!</h2>
+        <p id="victoryText"></p>
+    </div>
+
+    <script>
+        const muscles = [
+            { icon: '💪', name: 'Biceps' },
+            { icon: '🦵', name: 'Quads' },
+            { icon: '🫀', name: 'Heart' },
+            { icon: '🧠', name: 'Brain' },
+            { icon: '🦴', name: 'Bones' },
+            { icon: '🫁', name: 'Lungs' },
+            { icon: '👁️', name: 'Vision' },
+            { icon: '⚡', name: 'Energy' }
+        ];
+
+        let cards = [...muscles, ...muscles];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let moves = 0;
+        let startTime = null;
+        let timerInterval = null;
+
+        // Create animated background
+        function createBackground() {
+            const bg = document.getElementById('background');
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.width = Math.random() * 60 + 20 + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 4 + 's';
+                particle.style.opacity = Math.random() * 0.5 + 0.2;
+                bg.appendChild(particle);
+            }
+        }
+
+        // Mouse interaction with background
+        document.addEventListener('mousemove', (e) => {
+            const particles = document.querySelectorAll('.particle');
+            const mouseX = e.clientX / window.innerWidth;
+            const mouseY = e.clientY / window.innerHeight;
+            
+            particles.forEach((particle, i) => {
+                const speed = (i % 3 + 1) * 20;
+                const x = (mouseX - 0.5) * speed;
+                const y = (mouseY - 0.5) * speed;
+                particle.style.transform = `translate(${x}px, ${y}px)`;
+            });
+        });
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function startTimer() {
+            if (!startTime) {
+                startTime = Date.now();
+                timerInterval = setInterval(() => {
+                    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                    document.getElementById('time').textContent = elapsed;
+                }, 1000);
+            }
+        }
+
+        function createCard(muscle, index) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.dataset.index = index;
+            card.dataset.name = muscle.name;
+            
+            card.innerHTML = `
+                <div class="card-face card-front">?</div>
+                <div class="card-face card-back">${muscle.icon}<br><small>${muscle.name}</small></div>
+            `;
+            
+            card.addEventListener('click', flipCard);
+            return card;
+        }
+
+        function flipCard() {
+            if (flippedCards.length >= 2 || this.classList.contains('flipped')) return;
+            
+            startTimer();
+            this.classList.add('flipped');
+            flippedCards.push(this);
+            
+            if (flippedCards.length === 2) {
+                moves++;
+                document.getElementById('moves').textContent = moves;
+                checkMatch();
+            }
+        }
+
+        function checkMatch() {
+            const [card1, card2] = flippedCards;
+            
+            if (card1.dataset.name === card2.dataset.name) {
+                card1.classList.add('matched');
+                card2.classList.add('matched');
+                matchedPairs++;
+                flippedCards = [];
+                
+                if (matchedPairs === muscles.length) {
+                    setTimeout(showVictory, 500);
+                }
+            } else {
+                setTimeout(() => {
+                    card1.classList.remove('flipped');
+                    card2.classList.remove('flipped');
+                    flippedCards = [];
+                }, 1000);
+            }
+        }
+
+        function showVictory() {
+            clearInterval(timerInterval);
+            const time = Math.floor((Date.now() - startTime) / 1000);
+            document.getElementById('victoryText').textContent = 
+                `You matched all muscles in ${moves} moves and ${time} seconds!`;
+            document.getElementById('victory').style.display = 'block';
+        }
+
+        function resetGame() {
+            const board = document.getElementById('gameBoard');
+            board.innerHTML = '';
+            flippedCards = [];
+            matchedPairs = 0;
+            moves = 0;
+            startTime = null;
+            clearInterval(timerInterval);
+            document.getElementById('moves').textContent = '0';
+            document.getElementById('time').textContent = '0';
+            document.getElementById('victory').style.display = 'none';
+            
+            cards = shuffle([...muscles, ...muscles]);
+            cards.forEach((muscle, index) => {
+                board.appendChild(createCard(muscle, index));
+            });
+        }
+
+        // Initialize
+        createBackground();
+        resetGame();
+    </script>
+</body>
+</html>
